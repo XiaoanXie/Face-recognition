@@ -1,0 +1,24 @@
+# -*- coding: utf-8 -*-
+import dlib
+import face_recognition
+
+image = face_recognition.load_image_file("/mnt/hgfs/Ubuntu share/Pic for face grabbing for KNN examples/temp/IMG_20180509_134632.jpg")
+face_locations = face_recognition.face_locations(image) #passing argument: number_of_times_to_upsample=2 means that the original image will be scaled up twice when looking for faces. This can help find smaller faces in the image that might otherwise be missed but it will cause everything to run much more slowly since the input image will now be much larger.
+#len(face_locations)
+#for face_location in face_locations:
+#    top, right, bottom, left = face_location
+    
+#face_image = image[top:bottom, left:right]
+
+#recognize faces and save them as individual pics
+from PIL import Image
+import numpy as np
+
+i = 1
+for face_location in face_locations:
+    top, right, bottom, left = face_location
+    face_image = image[top:bottom, left:right]
+    pil_image = Image.fromarray(face_image)
+    pil_image.show()
+    pil_image.save("/mnt/hgfs/Ubuntu share/Image/"+np.str(i)+".jpg")
+    i = i + 1
