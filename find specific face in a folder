@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May  9 12:56:07 2018
+
+@author: xxa
+"""
+
+import face_recognition, os, shutil; from PIL import Image; import numpy as np
+
+#thoughts: 1. walk through each pic in the folder
+#2. recognize face in each pic
+#3. if yes, save the pic in a separated folder
+
+rootdir = "/mnt/hgfs/Ubuntu share/Image for recognition"
+if not os.path.exists(rootdir+"/for recognition"):
+    os.makedirs(rootdir+"/for recognition")
+if not os.path.exists(rootdir+"/sample"):
+    os.makedirs(rootdir+"/sample")
+if not os.path.exists(rootdir+"/selected"):
+    os.makedirs(rootdir+"/selected")
+if not os.path.exists(rootdir+"/temp"):
+    os.makedirs(rootdir+"/temp")
+
+#compress original pics, otherwise face encoding will cause kernel killed. takes long time
+for filename in os.listdir(rootdir+"/for recognition"):
+    if os.path.isfile(rootdir+"/for recognition/"+filename):     
+        #打开原图片缩小后保存，可以用if srcFile.endswith(".jpg")或者split，splitext等函数等针对特定文件压缩
+        sImg=Image.open(rootdir+"/for recognition/"+filename)  
+        w,h=sImg.size
+        if not w < 2000:
+            w = int(w/2)
+            h = int(h/2)
+            dImg=sImg.resize((w,h),Image.ANTIALIAS)  #设置压缩尺寸和选项，注意尺寸要用括号
+            dImg.save(rootdir+"/temp/"+filename)
+        else:
+            sImg.save(rootdir+"/temp/"+filename)
+
+#below is the face that we want to recognize
+picture_of_me = face_recognition.load_image_file(rootdir+"/sample/me.jpg")
+my_face_encoding = face_recognition.face_encodings(picture_of_me)[0]
+# passing argument: num_jitters=100 will tell dlib to randomly distort your image 100 times (randomly zoomed, rotated, translated, flipped), take the encoding of each version of the image and return the average. This can give you more generic face encodings that work better in some cases with the tradeoff that the algorithm will run more slowly. Whether or not the increase in accuracy is worth the slower runtime depends on your use case.
+# my_face_encoding now contains a universal 'encoding' of my facial features that can be compared to any other picture of a face!
+
+#compare each compressed pic, and copy the original pics containing specific face to "selected" folder
+for filename in os.listdir(rootdir+"/temp"):
+    unknown_picture = face_recognition.load_image_file(rootdir+"/temp/"+filename)
+    unknown_face_encodings = face_recognition.face_encodings(unknown_picture)
+    if len(unknown_face_encodings) > 0:
+        unknown_face_encoding = unknown_face_encodings[0] #otherwise "listed index out of range" error when it doesn't find any face in the pic
+        results = face_recognition.compare_faces([my_face_encoding], unknown_face_encoding, tolerance = 0.5) #the model is not that accurate for asian faces, higher tolerence needed, default is 0.6
+        if results[0] == True:
+            shutil.copyfile(rootdir+"/for recognition/"+filename, rootdir+"/selected/"+filename)
+
+shutil.rmtree(rootdir+"/temp")
