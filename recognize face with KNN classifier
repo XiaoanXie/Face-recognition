@@ -173,8 +173,4 @@ if __name__ == "__main__": #ref to blog.konghy.cn/2017/04/24/python-entry-progra
             save_path = os.path.join("/mnt/hgfs/Ubuntu share/Face recognition with KNN classifier/selected", image_file)
             shutil.copyfile(full_file_path, save_path)
        
-        # Print results on the console
-        for name, (top, right, bottom, left) in predictions:
-            print("- Found {} at ({}, {})".format(name, left, top))
-        # Display results overlaid on an image
-        show_prediction_labels_on_image(os.path.join("/mnt/hgfs/Ubuntu share/Face recognition with KNN classifier/test", image_file), predictions)
+        
